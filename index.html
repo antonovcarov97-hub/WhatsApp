@@ -1,121 +1,350 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Old WhatsApp Messenger</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2/dist/browser-image-compression.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@openlee/gif-maker@1.0.1/dist/index.umd.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Roboto, sans-serif; background: #ece5dd; height: 100vh; overflow: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#075e54">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>WhatsApp</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2/dist/browser-image-compression.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@openlee/gif-maker@1.0.1/dist/index.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1/dist/cropper.min.js"></script>
+<style>
+:root {
+  --green: #00a884;
+  --green-dark: #008069;
+  --bg: #efeae2;
+  --bg-light: #f0f2f5;
+  --panel: #ffffff;
+  --text: #111b21;
+  --text-2: #667781;
+  --bubble-in: #ffffff;
+  --bubble-out: #d9fdd3;
+  --border: #e9edef;
+  --header: #008069;
+  --input-bg: #ffffff;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+[data-theme="dark"] {
+  --bg: #0b141a;
+  --bg-light: #111b21;
+  --panel: #111b21;
+  --text: #e9edef;
+  --text-2: #8696a0;
+  --bubble-in: #202c33;
+  --bubble-out: #005c4b;
+  --border: #222d34;
+  --header: #202c33;
+  --input-bg: #2a3942;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text);
+  font-size: 15px;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
 
-    #auth-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background: #075e54; }
-    .auth-box { background: white; padding: 30px; border-radius: 8px; width: 320px; display: flex; flex-direction: column; gap: 12px; }
-    .auth-box h2 { color: #075e54; text-align: center; margin-bottom: 10px; }
-    .auth-box input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    .auth-box button { padding: 10px; background: #25d366; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .auth-box button:hover { background: #1ebe5a; }
-    .auth-box .hint { font-size: 11px; color: #888; text-align: center; }
+/* ================= AUTH ================= */
+#auth-screen {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-height: 100vh; padding: 24px;
+  background: linear-gradient(160deg, #075e54 0%, #128c7e 60%, #25d366 100%);
+  padding-top: calc(24px + var(--safe-top));
+  padding-bottom: calc(24px + var(--safe-bottom));
+}
+.auth-box {
+  background: var(--panel); border-radius: 20px; width: 100%; max-width: 400px;
+  padding: 32px 24px; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.auth-box .logo {
+  width: 72px; height: 72px; border-radius: 50%; background: var(--green);
+  margin: 0 auto 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 38px; color: white;
+}
+.auth-box h2 { color: var(--text); text-align: center; font-size: 22px; margin-bottom: 4px; }
+.auth-box .sub { text-align: center; color: var(--text-2); font-size: 13px; margin-bottom: 8px; }
+.auth-box input {
+  padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+  font-size: 16px; background: var(--bg-light); color: var(--text); outline: none;
+  transition: border-color .2s;
+}
+.auth-box input:focus { border-color: var(--green); }
+.auth-box button {
+  padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: transform .1s, opacity .2s;
+}
+.auth-box button:active { transform: scale(0.97); }
+.btn-primary { background: var(--green); color: white; }
+.btn-secondary { background: transparent; color: var(--green); border: 1.5px solid var(--green) !important; }
+#auth-msg { font-size: 13px; text-align: center; min-height: 18px; }
+.auth-box .hint { font-size: 11px; color: var(--text-2); text-align: center; }
 
-    #app-screen { display: none; height: 100vh; }
-    .app-container { display: flex; height: 100%; }
+/* ================= APP LAYOUT ================= */
+#app-screen { display: none; height: 100%; position: relative; }
+.app-container { display: flex; height: 100%; position: relative; }
 
-    .sidebar { width: 30%; min-width: 260px; background: white; display: flex; flex-direction: column; border-right: 1px solid #ddd; }
-    .sidebar-header { padding: 12px; background: #075e54; color: white; display: flex; justify-content: space-between; align-items: center; }
-    .sidebar-header .user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-    .sidebar-header .user-info img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #ccc; }
-    .sidebar-header .avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: #25d366; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-    .sidebar-actions button { background: none; border: 1px solid white; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 4px; }
-    .chat-list { flex: 1; overflow-y: auto; }
-    .chat-item { padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-    .chat-item:hover { background: #f5f5f5; }
-    .chat-item.active { background: #e9edef; }
-    .chat-item .avatar { width: 40px; height: 40px; border-radius: 50%; background: #25d366; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-    .chat-item .info { flex: 1; overflow: hidden; }
-    .chat-item .name { font-weight: 600; font-size: 15px; }
-    .chat-item .last-msg { font-size: 12px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ================= SIDEBAR / CHAT LIST ================= */
+.sidebar {
+  width: 100%; height: 100%; background: var(--panel);
+  display: flex; flex-direction: column;
+  position: absolute; inset: 0; z-index: 10;
+  transition: transform .25s ease;
+}
+.sidebar.hidden { transform: translateX(-100%); }
+.sidebar-header {
+  background: var(--header); color: white;
+  padding: 10px 12px; padding-top: calc(10px + var(--safe-top));
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-header .user-info { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; min-width: 0; }
+.sidebar-header .user-info img {
+  width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #ccc;
+}
+.sidebar-header .avatar-placeholder {
+  width: 38px; height: 38px; border-radius: 50%; background: #25d366;
+  display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;
+}
+.sidebar-header .user-name { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-header .icons { display: flex; gap: 6px; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.12); color: white; font-size: 20px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.icon-btn:active { background: rgba(255,255,255,0.25); }
 
-    .chat-window { flex: 1; display: flex; flex-direction: column; background: #efeae2; }
-    .chat-header { padding: 10px 16px; background: #075e54; color: white; display: flex; align-items: center; gap: 10px; }
-    .chat-header .chat-title { font-weight: 600; flex: 1; }
-    .chat-header button { background: none; border: 1px solid white; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    .messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-    .message { max-width: 70%; padding: 8px 12px; border-radius: 8px; background: white; font-size: 14px; word-wrap: break-word; }
-    .message.mine { align-self: flex-end; background: #dcf8c6; }
-    .message .sender { font-size: 11px; color: #075e54; font-weight: 600; margin-bottom: 2px; }
-    .message img, .message video { max-width: 100%; border-radius: 4px; margin-top: 4px; display: block; }
-    .message .time { font-size: 10px; color: #888; text-align: right; margin-top: 4px; }
+.search-bar {
+  padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--border);
+}
+.search-bar input {
+  width: 100%; padding: 10px 16px; border-radius: 20px; border: none;
+  background: var(--bg-light); color: var(--text); font-size: 15px; outline: none;
+}
 
-    .input-area { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; align-items: center; }
-    .input-area input[type="text"] { flex: 1; padding: 10px; border: none; border-radius: 20px; outline: none; }
-    .input-area button { width: 40px; height: 40px; border-radius: 50%; border: none; background: #25d366; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .input-area button:hover { background: #1ebe5a; }
-    .input-area .file-btn { background: #666; }
+.chat-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.chat-item {
+  padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: background .15s;
+}
+.chat-item:active { background: var(--bg-light); }
+.chat-item .avatar {
+  width: 50px; height: 50px; border-radius: 50%; background: var(--green);
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 20px; flex-shrink: 0;
+}
+.chat-item .info { flex: 1; min-width: 0; }
+.chat-item .name { font-weight: 600; font-size: 16px; margin-bottom: 2px; }
+.chat-item .last-msg { font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-item .meta { font-size: 11px; color: var(--text-2); }
+.empty-state {
+  padding: 60px 20px; text-align: center; color: var(--text-2); font-size: 14px;
+}
 
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-overlay.active { display: flex; }
-    .modal { background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; }
-    .modal h3 { margin-bottom: 15px; color: #075e54; }
-    .modal input[type="text"] { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
-    .modal button { padding: 10px 20px; background: #25d366; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 8px; }
-    .modal .cancel-btn { background: #999; }
-    .modal .member-list { max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 8px; margin-bottom: 10px; }
-    .modal .member-item { padding: 6px; display: flex; align-items: center; gap: 8px; }
-    .modal .member-item input { width: auto; }
-    .cropper-container { max-height: 400px; }
-  </style>
+/* ================= CHAT WINDOW ================= */
+.chat-window {
+  position: absolute; inset: 0; z-index: 20;
+  background: var(--bg); display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .25s ease;
+}
+.chat-window.active { transform: translateX(0); }
+.chat-header {
+  background: var(--header); color: white;
+  padding: 8px 10px; padding-top: calc(8px + var(--safe-top));
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.chat-header .back-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent;
+  color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.chat-header .chat-title { font-weight: 600; font-size: 16px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-header .chat-actions { display: flex; gap: 4px; }
+
+.messages {
+  flex: 1; overflow-y: auto; padding: 12px 8px; display: flex; flex-direction: column; gap: 4px;
+  -webkit-overflow-scrolling: touch;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.03) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+.message {
+  max-width: 78%; padding: 8px 11px; border-radius: 12px;
+  background: var(--bubble-in); font-size: 15px; line-height: 1.35;
+  word-wrap: break-word; position: relative;
+  box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+  animation: pop .18s ease-out;
+}
+@keyframes pop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+.message.mine { align-self: flex-end; background: var(--bubble-out); border-bottom-right-radius: 4px; }
+.message:not(.mine) { align-self: flex-start; border-bottom-left-radius: 4px; }
+.message .sender { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 2px; }
+.message.mine .sender { display: none; }
+.message img, .message video { max-width: 100%; border-radius: 8px; margin-top: 4px; display: block; max-height: 320px; }
+.message .time { font-size: 11px; color: var(--text-2); text-align: right; margin-top: 3px; }
+.message.mine .time { color: rgba(0,0,0,0.45); }
+
+/* ================= INPUT ================= */
+.input-area {
+  background: var(--header); padding: 8px; padding-bottom: calc(8px + var(--safe-bottom));
+  display: flex; gap: 6px; align-items: flex-end; flex-shrink: 0;
+}
+.input-area .field {
+  flex: 1; background: var(--input-bg); border-radius: 24px;
+  display: flex; align-items: center; padding: 4px 6px 4px 16px; min-height: 44px;
+}
+.input-area input[type="text"] {
+  flex: 1; padding: 8px 0; border: none; background: transparent; color: var(--text);
+  font-size: 16px; outline: none;
+}
+.input-area .icon-btn { width: 44px; height: 44px; font-size: 22px; }
+.input-area .send-btn { background: var(--green); }
+.input-area .send-btn:active { background: var(--green-dark); }
+.input-area .file-btn { background: rgba(255,255,255,0.15); }
+
+/* ================= FAB ================= */
+.fab {
+  position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom));
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--green); color: white; font-size: 26px; border: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; z-index: 15;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ================= MODALS ================= */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  z-index: 1000; justify-content: center; align-items: flex-end;
+  padding-bottom: var(--safe-bottom);
+}
+.modal-overlay.active { display: flex; animation: fade .2s; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--panel); padding: 20px; width: 100%; max-width: 500px;
+  border-radius: 20px 20px 0 0; max-height: 88vh; overflow-y: auto;
+  animation: slideUp .25s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal h3 { margin-bottom: 15px; color: var(--text); font-size: 18px; }
+.modal input[type="text"] {
+  width: 100%; padding: 13px 16px; margin-bottom: 10px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  background: var(--bg-light); color: var(--text); font-size: 16px; outline: none;
+}
+.modal input[type="text"]:focus { border-color: var(--green); }
+.modal .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+.modal .btn-row button {
+  flex: 1; padding: 13px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.modal .btn-main { background: var(--green); color: white; }
+.modal .btn-cancel { background: var(--bg-light); color: var(--text); }
+.modal .member-list { max-height: 45vh; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; padding: 6px; margin-bottom: 6px; }
+.member-item { padding: 10px; display: flex; align-items: center; gap: 10px; border-radius: 10px; cursor: pointer; }
+.member-item:active { background: var(--bg-light); }
+.member-item input { width: 20px; height: 20px; accent-color: var(--green); }
+.member-item .mini-avatar {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--green);
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+.cropper-container { max-height: 55vh; margin-bottom: 10px; }
+video#gif-video-preview { border-radius: 12px; }
+
+/* ================= UTIL ================= */
+.hidden { display: none !important; }
+.spinner {
+  display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (min-width: 720px) {
+  .app-container { max-width: 1200px; margin: 0 auto; }
+  .sidebar { position: relative; width: 380px; transform: none; }
+  .sidebar.hidden { transform: none; }
+  .chat-window { position: relative; transform: none; flex: 1; }
+  .chat-window:not(.active) { display: none; }
+  .fab { display: none; }
+  .modal-overlay { align-items: center; }
+  .modal { border-radius: 20px; }
+}
+</style>
 </head>
 <body>
 
+<!-- ================= AUTH ================= -->
 <div id="auth-screen">
   <div class="auth-box">
-    <h2>Old WhatsApp</h2>
+    <div class="logo">💬</div>
+    <h2>WhatsApp</h2>
+    <p class="sub">Войдите или создайте аккаунт</p>
     <input id="auth-name" type="text" placeholder="Имя (латиница)" autocomplete="username">
     <input id="auth-password" type="password" placeholder="Пароль" autocomplete="current-password">
-    <button onclick="handleSignIn()">Войти</button>
-    <button onclick="handleSignUp()" style="background:#075e54;">Регистрация</button>
-    <p id="auth-msg" style="color:red; font-size:12px; text-align:center; min-height:16px;"></p>
+    <button class="btn-primary" onclick="handleSignIn()">Войти</button>
+    <button class="btn-secondary" onclick="handleSignUp()">Регистрация</button>
+    <p id="auth-msg"></p>
     <p class="hint">Имя: 3-32 символа, латиница, цифры, _ и -</p>
   </div>
 </div>
 
+<!-- ================= APP ================= -->
 <div id="app-screen">
   <div class="app-container">
-    <div class="sidebar">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="user-info" onclick="openAvatarModal()">
           <span id="my-avatar-container"><div class="avatar-placeholder" id="my-avatar-placeholder">?</div></span>
-          <span id="my-username">Пользователь</span>
+          <span class="user-name" id="my-username">Пользователь</span>
         </div>
-        <div class="sidebar-actions">
-          <button onclick="openCreateGroupModal()">+ Группа</button>
-          <button onclick="openStartChatModal()">+ Чат</button>
-          <button onclick="handleLogout()">Выйти</button>
+        <div class="icons">
+          <button class="icon-btn" onclick="openCreateGroupModal()" title="Группа">👥</button>
+          <button class="icon-btn" onclick="openStartChatModal()" title="Чат">✏️</button>
+          <button class="icon-btn" onclick="toggleTheme()" title="Тема">🌙</button>
+          <button class="icon-btn" onclick="handleLogout()" title="Выйти">🚪</button>
         </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Поиск чатов" oninput="filterChats()">
       </div>
       <div class="chat-list" id="chat-list"></div>
     </div>
 
-    <div class="chat-window">
+    <!-- Chat window -->
+    <div class="chat-window" id="chat-window">
       <div class="chat-header">
-        <span class="chat-title" id="current-chat-title">Выберите чат</span>
-        <button id="gif-btn-header" style="display:none;" onclick="openGifModal()">Сделать GIF</button>
+        <button class="back-btn" onclick="closeChat()">←</button>
+        <span class="chat-title" id="current-chat-title">Чат</span>
+        <div class="chat-actions">
+          <button class="icon-btn" id="gif-btn-header" onclick="openGifModal()" title="Сделать GIF" style="display:none;">🎞️</button>
+        </div>
       </div>
       <div class="messages" id="messages"></div>
-      <div class="input-area" id="input-area" style="display:none;">
-        <button class="file-btn" onclick="document.getElementById('file-input').click()">📎</button>
+      <div class="input-area" id="input-area">
+        <button class="icon-btn file-btn" onclick="document.getElementById('file-input').click()">📎</button>
         <input type="file" id="file-input" accept="image/*,video/*" style="display:none;" onchange="handleFileSelect(event)">
-        <input type="text" id="message-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
-        <button onclick="sendMessage()">➤</button>
+        <div class="field">
+          <input type="text" id="message-input" placeholder="Сообщение" onkeypress="if(event.key==='Enter') sendMessage()">
+        </div>
+        <button class="icon-btn send-btn" onclick="sendMessage()">➤</button>
       </div>
     </div>
+
   </div>
+  <button class="fab" onclick="openStartChatModal()">✏️</button>
 </div>
 
+<!-- ================= MODALS ================= -->
 <div class="modal-overlay" id="avatar-modal">
   <div class="modal">
     <h3>Аватарка</h3>
@@ -123,9 +352,9 @@
     <div class="cropper-container" id="cropper-container" style="display:none;">
       <img id="avatar-preview" style="max-width:100%;">
     </div>
-    <div style="margin-top:10px;">
-      <button onclick="saveAvatar()">Сохранить</button>
-      <button class="cancel-btn" onclick="closeModal('avatar-modal')">Отмена</button>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal('avatar-modal')">Отмена</button>
+      <button class="btn-main" onclick="saveAvatar()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -135,28 +364,34 @@
     <h3>Создать группу</h3>
     <input type="text" id="group-name" placeholder="Название группы">
     <div class="member-list" id="member-list"></div>
-    <button onclick="createGroup()">Создать</button>
-    <button class="cancel-btn" onclick="closeModal('group-modal')">Отмена</button>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal('group-modal')">Отмена</button>
+      <button class="btn-main" onclick="createGroup()">Создать</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="start-chat-modal">
   <div class="modal">
-    <h3>Новый личный чат</h3>
+    <h3>Новый чат</h3>
     <div class="member-list" id="start-chat-list"></div>
-    <button class="cancel-btn" onclick="closeModal('start-chat-modal')">Отмена</button>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal('start-chat-modal')">Закрыть</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="gif-modal">
   <div class="modal">
-    <h3>Создать GIF из видео</h3>
+    <h3>GIF из видео</h3>
     <input type="file" id="gif-file" accept="video/*" onchange="previewGifVideo(event)">
     <video id="gif-video-preview" style="max-width:100%; display:none; margin-top:10px;" controls></video>
-    <div id="gif-loading" style="display:none; margin-top:10px; color:#9c27b0;">Обработка GIF...</div>
-    <div style="margin-top:10px;">
-      <button onclick="makeGif()" id="gif-make-btn" style="display:none;">Сделать GIF (3 сек)</button>
-      <button class="cancel-btn" onclick="closeModal('gif-modal')">Отмена</button>
+    <div id="gif-loading" style="display:none; margin-top:10px; color:var(--green); text-align:center;">
+      <span class="spinner"></span> Обработка GIF...
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal('gif-modal')">Отмена</button>
+      <button class="btn-main" id="gif-make-btn" onclick="makeGif()" style="display:none;">Сделать GIF</button>
     </div>
   </div>
 </div>
@@ -166,8 +401,7 @@
 const SUPABASE_URL = 'https://ejqmqetysxfutjftxtdf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_UX8n70aWWqQVgu1jKhAxcg_vpkBkWV6';
 const FAKE_EMAIL_DOMAIN = 'local.app';
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================== СОСТОЯНИЕ ====================
 let currentUser = null;
@@ -176,125 +410,104 @@ let cropper = null;
 let allUsers = [];
 let messageSubscription = null;
 let gifVideoFile = null;
+let allChatsCache = [];
+
+// ==================== ТЕМА ====================
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('wa_theme', t);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(cur);
+}
+(function initTheme() {
+  const saved = localStorage.getItem('wa_theme') || 'light';
+  applyTheme(saved);
+})();
 
 // ==================== AUTH ====================
-function nameToEmail(name) {
-  return `${name.trim().toLowerCase()}@${FAKE_EMAIL_DOMAIN}`;
-}
-
-function validateName(name) {
-  return /^[a-zA-Z0-9_-]{3,32}$/.test(name);
-}
+function nameToEmail(name) { return `${name.trim().toLowerCase()}@${FAKE_EMAIL_DOMAIN}`; }
+function validateName(name) { return /^[a-zA-Z0-9_-]{3,32}$/.test(name); }
 
 async function handleSignUp() {
   const name = document.getElementById('auth-name').value.trim();
   const password = document.getElementById('auth-password').value;
   const msg = document.getElementById('auth-msg');
+  if (!validateName(name)) { msg.style.color = '#e74c3c'; msg.textContent = 'Имя: 3-32 символа, латиница, цифры, _ и -'; return; }
+  if (password.length < 6) { msg.style.color = '#e74c3c'; msg.textContent = 'Пароль минимум 6 символов'; return; }
 
-  if (!validateName(name)) {
-    msg.style.color = 'red';
-    msg.textContent = 'Имя: 3-32 символа, латиница, цифры, _ и -';
-    return;
-  }
-  if (password.length < 6) {
-    msg.style.color = 'red';
-    msg.textContent = 'Пароль минимум 6 символов';
-    return;
-  }
-
-  const { error } = await supabase.auth.signUp({
-    email: nameToEmail(name),
-    password,
+  const { error } = await supabaseClient.auth.signUp({
+    email: nameToEmail(name), password,
     options: { data: { username: name } }
   });
-
-  if (error) {
-    msg.style.color = 'red';
-    msg.textContent = error.message;
-  } else {
-    msg.style.color = 'green';
-    msg.textContent = 'Аккаунт создан! Входим...';
-    await handleSignIn();
-  }
+  if (error) { msg.style.color = '#e74c3c'; msg.textContent = error.message; }
+  else { msg.style.color = '#25d366'; msg.textContent = 'Аккаунт создан! Входим...'; await handleSignIn(); }
 }
 
 async function handleSignIn() {
   const name = document.getElementById('auth-name').value.trim();
   const password = document.getElementById('auth-password').value;
   const msg = document.getElementById('auth-msg');
+  if (!name || !password) { msg.style.color = '#e74c3c'; msg.textContent = 'Введите имя и пароль'; return; }
 
-  if (!name || !password) {
-    msg.style.color = 'red';
-    msg.textContent = 'Введите имя и пароль';
-    return;
-  }
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email: nameToEmail(name),
-    password
-  });
-
+  const { error } = await supabaseClient.auth.signInWithPassword({ email: nameToEmail(name), password });
   if (error) {
-    msg.style.color = 'red';
-    msg.textContent = error.message === 'Invalid login credentials'
-      ? 'Неверное имя или пароль'
-      : error.message;
+    msg.style.color = '#e74c3c';
+    msg.textContent = error.message === 'Invalid login credentials' ? 'Неверное имя или пароль' : error.message;
   }
 }
 
 async function handleLogout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   location.reload();
 }
 
-supabase.auth.getSession().then(({ data: { session } }) => {
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (session) initApp(session.user);
+});
+supabaseClient.auth.onAuthStateChange((_event, session) => {
   if (session) initApp(session.user);
 });
 
-supabase.auth.onAuthStateChange((_event, session) => {
-  if (session) initApp(session.user);
-});
-
-// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+// ==================== INIT ====================
 async function initApp(user) {
   currentUser = user;
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
 
   await ensureProfile();
-
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
   if (profile) {
     document.getElementById('my-username').textContent = profile.username || 'Пользователь';
     if (profile.avatar_url) {
       document.getElementById('my-avatar-container').innerHTML =
-        `<img src="${profile.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+        `<img src="${profile.avatar_url}" alt="avatar">`;
     } else {
       document.getElementById('my-avatar-placeholder').textContent =
         (profile.username || '?').charAt(0).toUpperCase();
     }
   }
-
   await loadChats();
   await loadAllUsers();
 }
 
 async function ensureProfile() {
-  const { data: existing } = await supabase.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+  const { data: existing } = await supabaseClient.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
   if (!existing) {
     const username = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
-    await supabase.from('profiles').insert({ id: currentUser.id, username });
+    await supabaseClient.from('profiles').insert({ id: currentUser.id, username });
   }
 }
 
 async function loadAllUsers() {
-  const { data } = await supabase.from('profiles').select('*').neq('id', currentUser.id);
+  const { data } = await supabaseClient.from('profiles').select('*').neq('id', currentUser.id);
   allUsers = data || [];
 }
 
-// ==================== ЧАТЫ ====================
+// ==================== CHATS ====================
 async function loadChats() {
-  const { data: memberships } = await supabase
+  const { data: memberships } = await supabaseClient
     .from('chat_members')
     .select('chat_id, chats(id, name, is_group)')
     .eq('user_id', currentUser.id);
@@ -303,66 +516,86 @@ async function loadChats() {
   chatListEl.innerHTML = '';
 
   if (!memberships || memberships.length === 0) {
-    chatListEl.innerHTML = '<div style="padding:20px;color:#888;text-align:center;">Нет чатов.<br>Создайте группу или личный чат.</div>';
+    chatListEl.innerHTML = '<div class="empty-state">Нет чатов.<br>Нажмите ✏️ чтобы начать чат<br>или 👥 чтобы создать группу.</div>';
+    allChatsCache = [];
     return;
   }
 
   const personalChatIds = memberships.filter(m => m.chats && !m.chats.is_group).map(m => m.chat_id);
   let personalNames = {};
   if (personalChatIds.length > 0) {
-    const { data: members } = await supabase
+    const { data: members } = await supabaseClient
       .from('chat_members')
       .select('chat_id, profiles(username)')
       .in('chat_id', personalChatIds)
       .neq('user_id', currentUser.id);
-    (members || []).forEach(m => {
-      personalNames[m.chat_id] = m.profiles?.username || 'Собеседник';
-    });
+    (members || []).forEach(m => { personalNames[m.chat_id] = m.profiles?.username || 'Собеседник'; });
   }
 
-  for (const m of memberships) {
+  allChatsCache = memberships.map(m => {
     const chat = m.chats;
-    if (!chat) continue;
-    const displayName = chat.is_group
-      ? (chat.name || 'Группа')
-      : (personalNames[chat.id] || 'Личный чат');
+    if (!chat) return null;
+    const displayName = chat.is_group ? (chat.name || 'Группа') : (personalNames[chat.id] || 'Личный чат');
+    return { id: chat.id, name: displayName, isGroup: chat.is_group };
+  }).filter(Boolean);
 
+  renderChats(allChatsCache);
+}
+
+function renderChats(chats) {
+  const chatListEl = document.getElementById('chat-list');
+  chatListEl.innerHTML = '';
+  if (chats.length === 0) {
+    chatListEl.innerHTML = '<div class="empty-state">Ничего не найдено</div>';
+    return;
+  }
+  chats.forEach(c => {
     const div = document.createElement('div');
     div.className = 'chat-item';
-    div.dataset.chatId = chat.id;
-    div.onclick = () => openChat(chat.id, displayName);
+    div.dataset.chatId = c.id;
+    div.onclick = () => openChat(c.id, c.name);
     div.innerHTML = `
-      <div class="avatar">${escapeHtml(displayName.charAt(0).toUpperCase())}</div>
+      <div class="avatar">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
       <div class="info">
-        <div class="name">${escapeHtml(displayName)}</div>
-        <div class="last-msg">${chat.is_group ? '👥 Группа' : '💬 Личный чат'}</div>
+        <div class="name">${escapeHtml(c.name)}</div>
+        <div class="last-msg">${c.isGroup ? '👥 Группа' : '💬 Личный чат'}</div>
       </div>
     `;
     chatListEl.appendChild(div);
-  }
+  });
+}
+
+function filterChats() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  if (!q) { renderChats(allChatsCache); return; }
+  renderChats(allChatsCache.filter(c => c.name.toLowerCase().includes(q)));
 }
 
 async function openChat(chatId, title) {
   currentChatId = chatId;
   document.getElementById('current-chat-title').textContent = title;
-  document.getElementById('input-area').style.display = 'flex';
-  document.getElementById('gif-btn-header').style.display = 'block';
-
-  document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-  document.querySelector(`.chat-item[data-chat-id="${chatId}"]`)?.classList.add('active');
+  document.getElementById('gif-btn-header').style.display = 'flex';
+  document.getElementById('chat-window').classList.add('active');
+  document.getElementById('sidebar').classList.add('hidden');
 
   await loadMessages(chatId);
   subscribeToMessages(chatId);
 }
 
-// ==================== СООБЩЕНИЯ ====================
+function closeChat() {
+  currentChatId = null;
+  document.getElementById('chat-window').classList.remove('active');
+  document.getElementById('sidebar').classList.remove('hidden');
+  if (messageSubscription) { supabaseClient.removeChannel(messageSubscription); messageSubscription = null; }
+}
+
+// ==================== MESSAGES ====================
 async function loadMessages(chatId) {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('messages')
     .select('*, profiles(username)')
     .eq('chat_id', chatId)
     .order('created_at', { ascending: true });
-
   const container = document.getElementById('messages');
   container.innerHTML = '';
   if (data) data.forEach(msg => renderMessage(msg));
@@ -373,7 +606,6 @@ function renderMessage(msg) {
   const container = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = 'message' + (msg.sender_id === currentUser.id ? ' mine' : '');
-
   const senderName = msg.profiles?.username || 'Аноним';
   const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -381,11 +613,10 @@ function renderMessage(msg) {
   if (msg.media_type === 'image' || msg.media_type === 'gif') {
     contentHtml = `<img src="${msg.content}" loading="lazy">`;
   } else if (msg.media_type === 'video') {
-    contentHtml = `<video src="${msg.content}" controls></video>`;
+    contentHtml = `<video src="${msg.content}" controls playsinline></video>`;
   } else {
     contentHtml = `<span>${escapeHtml(msg.content)}</span>`;
   }
-
   div.innerHTML = `
     <div class="sender">${escapeHtml(senderName)}</div>
     ${contentHtml}
@@ -396,19 +627,15 @@ function renderMessage(msg) {
 }
 
 function subscribeToMessages(chatId) {
-  if (messageSubscription) supabase.removeChannel(messageSubscription);
-  messageSubscription = supabase
+  if (messageSubscription) supabaseClient.removeChannel(messageSubscription);
+  messageSubscription = supabaseClient
     .channel(`messages-chat-${chatId}`)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-      filter: `chat_id=eq.${chatId}`
-    }, async (payload) => {
-      const { data: profile } = await supabase.from('profiles').select('username').eq('id', payload.new.sender_id).single();
-      payload.new.profiles = profile;
-      renderMessage(payload.new);
-    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
+      async (payload) => {
+        const { data: profile } = await supabaseClient.from('profiles').select('username').eq('id', payload.new.sender_id).single();
+        payload.new.profiles = profile;
+        renderMessage(payload.new);
+      })
     .subscribe();
 }
 
@@ -418,64 +645,46 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// ==================== ТЕКСТ ====================
+// ==================== SEND TEXT ====================
 async function sendMessage() {
   const input = document.getElementById('message-input');
   const text = input.value.trim();
   if (!text || !currentChatId) return;
   input.value = '';
-  const { error } = await supabase.from('messages').insert({
-    chat_id: currentChatId,
-    sender_id: currentUser.id,
-    content: text,
-    media_type: 'text'
+  const { error } = await supabaseClient.from('messages').insert({
+    chat_id: currentChatId, sender_id: currentUser.id, content: text, media_type: 'text'
   });
   if (error) alert('Ошибка: ' + error.message);
 }
 
-// ==================== ФАЙЛЫ ====================
+// ==================== FILES ====================
 async function handleFileSelect(event) {
   const file = event.target.files[0];
   if (!file || !currentChatId) return;
   event.target.value = '';
-
   const isImage = file.type.startsWith('image/');
   const isVideo = file.type.startsWith('video/');
-
   try {
-    let uploadBlob = file;
-    let mediaType = 'video';
-    let ext = file.name.split('.').pop() || 'bin';
-
+    let uploadBlob = file, mediaType = 'video', ext = file.name.split('.').pop() || 'bin';
     if (isImage) {
       uploadBlob = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1280, useWebWorker: true });
-      mediaType = 'image';
-      ext = 'jpg';
+      mediaType = 'image'; ext = 'jpg';
     } else if (isVideo) {
-      mediaType = 'video';
-      ext = 'mp4';
-    } else {
-      alert('Только фото и видео');
-      return;
-    }
+      if (file.size > 25 * 1024 * 1024) { alert('Видео больше 25 МБ. Пожалуйста, выберите файл поменьше.'); return; }
+      mediaType = 'video'; ext = 'mp4';
+    } else { alert('Только фото и видео'); return; }
 
     const fileName = `${currentUser.id}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from('chat-media')
-      .upload(fileName, uploadBlob, { contentType: uploadBlob.type || (isImage ? 'image/jpeg' : 'video/mp4') });
+    const { error: uploadError } = await supabaseClient.storage
+      .from('chat-media').upload(fileName, uploadBlob, { contentType: uploadBlob.type || (isImage ? 'image/jpeg' : 'video/mp4') });
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage.from('chat-media').getPublicUrl(fileName);
-    const { error: msgError } = await supabase.from('messages').insert({
-      chat_id: currentChatId,
-      sender_id: currentUser.id,
-      content: publicUrl,
-      media_type: mediaType
+    const { data: { publicUrl } } = supabaseClient.storage.from('chat-media').getPublicUrl(fileName);
+    const { error: msgError } = await supabaseClient.from('messages').insert({
+      chat_id: currentChatId, sender_id: currentUser.id, content: publicUrl, media_type: mediaType
     });
     if (msgError) throw msgError;
-  } catch (err) {
-    alert('Ошибка загрузки: ' + err.message);
-  }
+  } catch (err) { alert('Ошибка загрузки: ' + err.message); }
 }
 
 // ==================== GIF ====================
@@ -487,7 +696,6 @@ function openGifModal() {
   document.getElementById('gif-loading').style.display = 'none';
   document.getElementById('gif-modal').classList.add('active');
 }
-
 function previewGifVideo(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -495,51 +703,32 @@ function previewGifVideo(event) {
   const v = document.getElementById('gif-video-preview');
   v.src = URL.createObjectURL(file);
   v.style.display = 'block';
-  document.getElementById('gif-make-btn').style.display = 'inline-block';
+  document.getElementById('gif-make-btn').style.display = 'block';
 }
-
 async function makeGif() {
   if (!gifVideoFile || !currentChatId) return;
   const loading = document.getElementById('gif-loading');
   const makeBtn = document.getElementById('gif-make-btn');
   loading.style.display = 'block';
   makeBtn.disabled = true;
-
   try {
     if (!window.toGif) throw new Error('GIF библиотека не загрузилась');
-    const gifBlob = await window.toGif(gifVideoFile, {
-      startTime: 0, duration: 3, fps: 10, width: 320, quality: 'medium'
-    });
-
+    const gifBlob = await window.toGif(gifVideoFile, { startTime: 0, duration: 3, fps: 10, width: 320, quality: 'medium' });
     const fileName = `${currentUser.id}/${Date.now()}.gif`;
-    const { error: uploadError } = await supabase.storage
-      .from('chat-media')
-      .upload(fileName, gifBlob, { contentType: 'image/gif' });
+    const { error: uploadError } = await supabaseClient.storage.from('chat-media').upload(fileName, gifBlob, { contentType: 'image/gif' });
     if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage.from('chat-media').getPublicUrl(fileName);
-    const { error: msgError } = await supabase.from('messages').insert({
-      chat_id: currentChatId,
-      sender_id: currentUser.id,
-      content: publicUrl,
-      media_type: 'gif'
+    const { data: { publicUrl } } = supabaseClient.storage.from('chat-media').getPublicUrl(fileName);
+    const { error: msgError } = await supabaseClient.from('messages').insert({
+      chat_id: currentChatId, sender_id: currentUser.id, content: publicUrl, media_type: 'gif'
     });
     if (msgError) throw msgError;
-
     closeModal('gif-modal');
-  } catch (err) {
-    alert('Ошибка GIF: ' + err.message);
-  } finally {
-    loading.style.display = 'none';
-    makeBtn.disabled = false;
-  }
+  } catch (err) { alert('Ошибка GIF: ' + err.message); }
+  finally { loading.style.display = 'none'; makeBtn.disabled = false; }
 }
 
-// ==================== АВАТАРКА ====================
-function openAvatarModal() {
-  document.getElementById('avatar-modal').classList.add('active');
-}
-
+// ==================== AVATAR ====================
+function openAvatarModal() { document.getElementById('avatar-modal').classList.add('active'); }
 function previewAvatar(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -549,130 +738,93 @@ function previewAvatar(event) {
   if (cropper) cropper.destroy();
   cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1, autoCropArea: 0.8 });
 }
-
 async function saveAvatar() {
   if (!cropper) return;
   const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
   canvas.toBlob(async (blob) => {
     try {
       const fileName = `${currentUser.id}/avatar.jpg`;
-      const { error } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
+      const { error } = await supabaseClient.storage.from('avatars').upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
       if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
       const urlWithTs = publicUrl + '?t=' + Date.now();
-
-      await supabase.from('profiles').update({ avatar_url: urlWithTs }).eq('id', currentUser.id);
-      document.getElementById('my-avatar-container').innerHTML =
-        `<img src="${urlWithTs}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+      await supabaseClient.from('profiles').update({ avatar_url: urlWithTs }).eq('id', currentUser.id);
+      document.getElementById('my-avatar-container').innerHTML = `<img src="${urlWithTs}" alt="avatar">`;
       closeModal('avatar-modal');
-      cropper.destroy();
-      cropper = null;
-    } catch (err) {
-      alert('Ошибка: ' + err.message);
-    }
+      cropper.destroy(); cropper = null;
+    } catch (err) { alert('Ошибка: ' + err.message); }
   }, 'image/jpeg', 0.85);
 }
 
-// ==================== ГРУППЫ ====================
+// ==================== GROUPS ====================
 function openCreateGroupModal() {
   document.getElementById('group-modal').classList.add('active');
   const list = document.getElementById('member-list');
-  if (allUsers.length === 0) {
-    list.innerHTML = '<div style="padding:8px;color:#888;">Других пользователей нет</div>';
-    return;
-  }
+  if (allUsers.length === 0) { list.innerHTML = '<div style="padding:12px;color:var(--text-2);">Других пользователей нет</div>'; return; }
   list.innerHTML = allUsers.map(u => `
     <div class="member-item">
       <input type="checkbox" value="${u.id}" id="member-${u.id}">
-      <label for="member-${u.id}">${escapeHtml(u.username || u.id)}</label>
+      <label for="member-${u.id}" style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;">
+        <span class="mini-avatar">${escapeHtml((u.username || '?').charAt(0).toUpperCase())}</span>
+        <span>${escapeHtml(u.username || u.id)}</span>
+      </label>
     </div>
   `).join('');
 }
-
 async function createGroup() {
   const name = document.getElementById('group-name').value.trim();
   if (!name) { alert('Введите название'); return; }
-
   const selected = Array.from(document.querySelectorAll('#member-list input:checked')).map(cb => cb.value);
-  const { data: chat, error: chatError } = await supabase
-    .from('chats').insert({ name, is_group: true }).select().single();
+  const { data: chat, error: chatError } = await supabaseClient.from('chats').insert({ name, is_group: true }).select().single();
   if (chatError) { alert('Ошибка: ' + chatError.message); return; }
-
   const members = [currentUser.id, ...selected].map(uid => ({ chat_id: chat.id, user_id: uid }));
-  const { error: memberError } = await supabase.from('chat_members').insert(members);
+  const { error: memberError } = await supabaseClient.from('chat_members').insert(members);
   if (memberError) { alert('Ошибка участников: ' + memberError.message); return; }
-
   closeModal('group-modal');
   document.getElementById('group-name').value = '';
   await loadChats();
 }
 
-// ==================== ЛИЧНЫЙ ЧАТ ====================
+// ==================== PERSONAL CHAT ====================
 function openStartChatModal() {
   document.getElementById('start-chat-modal').classList.add('active');
   const list = document.getElementById('start-chat-list');
-  if (allUsers.length === 0) {
-    list.innerHTML = '<div style="padding:8px;color:#888;">Других пользователей нет</div>';
-    return;
-  }
+  if (allUsers.length === 0) { list.innerHTML = '<div style="padding:12px;color:var(--text-2);">Других пользователей нет</div>'; return; }
   list.innerHTML = allUsers.map(u => `
-    <div class="member-item" style="cursor:pointer;" onclick="startPersonalChat('${u.id}', '${escapeHtml(u.username || '')}')">
-      <span style="width:28px;height:28px;border-radius:50%;background:#25d366;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:12px;">${escapeHtml((u.username || '?').charAt(0).toUpperCase())}</span>
-      <span>${escapeHtml(u.username || u.id)}</span>
+    <div class="member-item" onclick="startPersonalChat('${u.id}', '${escapeHtml(u.username || '')}')">
+      <span class="mini-avatar">${escapeHtml((u.username || '?').charAt(0).toUpperCase())}</span>
+      <span style="flex:1;">${escapeHtml(u.username || u.id)}</span>
     </div>
   `).join('');
 }
-
 async function startPersonalChat(otherUserId, otherName) {
   closeModal('start-chat-modal');
-
-  const { data: myChats } = await supabase
-    .from('chat_members')
-    .select('chat_id, chats!inner(is_group)')
-    .eq('user_id', currentUser.id)
-    .eq('chats.is_group', false);
-
+  const { data: myChats } = await supabaseClient
+    .from('chat_members').select('chat_id, chats!inner(is_group)')
+    .eq('user_id', currentUser.id).eq('chats.is_group', false);
   const myPersonalIds = (myChats || []).map(m => m.chat_id);
   if (myPersonalIds.length > 0) {
-    const { data: otherMembership } = await supabase
-      .from('chat_members')
-      .select('chat_id')
-      .eq('user_id', otherUserId)
-      .in('chat_id', myPersonalIds);
+    const { data: otherMembership } = await supabaseClient
+      .from('chat_members').select('chat_id').eq('user_id', otherUserId).in('chat_id', myPersonalIds);
     if (otherMembership && otherMembership.length > 0) {
-      await loadChats();
-      openChat(otherMembership[0].chat_id, otherName);
-      return;
+      await loadChats(); openChat(otherMembership[0].chat_id, otherName); return;
     }
   }
-
-  const { data: chat, error } = await supabase
-    .from('chats').insert({ name: null, is_group: false }).select().single();
+  const { data: chat, error } = await supabaseClient.from('chats').insert({ name: null, is_group: false }).select().single();
   if (error) { alert('Ошибка: ' + error.message); return; }
-
-  await supabase.from('chat_members').insert([
+  await supabaseClient.from('chat_members').insert([
     { chat_id: chat.id, user_id: currentUser.id },
     { chat_id: chat.id, user_id: otherUserId }
   ]);
-
   await loadChats();
   openChat(chat.id, otherName);
 }
 
-// ==================== УТИЛИТЫ ====================
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-
+// ==================== UTIL ====================
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('active');
-  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
 });
 </script>
-
 </body>
 </html>
